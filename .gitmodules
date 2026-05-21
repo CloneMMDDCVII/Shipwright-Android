@@ -1,7 +1,7 @@
 [submodule "libultraship"]
 	path = libultraship
-	url = https://github.com/Waterdish/libultraship.git
-	branch = mm
+	url = https://github.com/CloneMMDDCVII/libultraship.git
+	branch = main
 [submodule "OTRExporter"]
 	path = OTRExporter
 	url = https://github.com/Waterdish/OTRExporter.git

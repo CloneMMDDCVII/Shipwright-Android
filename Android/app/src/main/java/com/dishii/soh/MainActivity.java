@@ -523,6 +523,13 @@ public class MainActivity extends SDLActivity{
         TouchAreaEnabled = true;
     }
 
+    void LaunchSettingsActivity(){
+        runOnUiThread(() -> {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        });
+    }
+
     private void setupLookAround(FrameLayout rightScreenArea) {
         rightScreenArea.setOnTouchListener(new View.OnTouchListener() {
             private float lastX = 0;

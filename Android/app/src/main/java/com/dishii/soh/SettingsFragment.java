@@ -106,6 +106,17 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 case "combobox":
                     return buildCombobox(label, cvar, tooltip, w);
 
+                case "info": {
+                    Preference info = new Preference(requireContext());
+                    info.setTitle(label);
+                    String summary = w.optString("summary", "");
+                    if (!summary.isEmpty()) info.setSummary(summary);
+                    info.setEnabled(false);
+                    info.setIconSpaceReserved(false);
+                    info.setPersistent(false);
+                    return info;
+                }
+
                 default:
                     return null;
             }

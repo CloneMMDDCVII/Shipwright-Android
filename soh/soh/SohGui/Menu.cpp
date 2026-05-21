@@ -942,6 +942,17 @@ static nlohmann::json SerializeWidget(const WidgetInfo& widget) {
             return w;
         }
 
+        case WIDGET_WINDOW_BUTTON:
+            w["type"] = "info";
+            w["label"] = widget.name;
+            w["summary"] = "Configure in-game via the menu overlay";
+            return w;
+
+        case WIDGET_TEXT:
+            w["type"] = "info";
+            w["label"] = widget.name;
+            return w;
+
         default:
             return nullptr;
     }

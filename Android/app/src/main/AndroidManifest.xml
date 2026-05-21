@@ -87,7 +87,7 @@
             android:name=".SettingsActivity"
             android:label="Settings"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             android:screenOrientation="unspecified"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden" />
 

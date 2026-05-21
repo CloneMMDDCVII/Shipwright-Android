@@ -9,6 +9,11 @@
 #include <spdlog/fmt/fmt.h>
 #include "variables.h"
 #include <tuple>
+#ifdef __ANDROID__
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <algorithm>
+#endif
 
 extern "C" {
 #include "z64.h"
@@ -854,16 +859,6 @@ void Menu::DrawElement() {
     ImGui::End();
 }
 #ifdef __ANDROID__
-// ---------------------------------------------------------------------------
-// Settings schema serializer — walks the widget tree and emits a JSON file
-// that the Android SettingsActivity reads to build a native preferences UI.
-// Called once at the end of SohMenu::InitElement() so all widgets are present.
-// ---------------------------------------------------------------------------
-#include <nlohmann/json.hpp>
-#include <fstream>
-#include "Context.h"
-#include <spdlog/spdlog.h>
-#include <algorithm>
 
 static nlohmann::json SerializeWidget(const WidgetInfo& widget) {
     nlohmann::json w;

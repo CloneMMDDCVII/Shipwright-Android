@@ -1141,17 +1141,43 @@ void SohInputEditorWindow::DrawAddGyroMappingButton(uint8_t port) {
 
     if (ImGui::BeginPopup(popupId.c_str())) {
         mInputEditorPopupOpen = true;
+        auto gyro = Ship::Context::GetInstance()->GetControlDeck()->GetControllerByPort(port)->GetGyro();
+
+#ifdef __ANDROID__
+        bool hasDeviceGyro = gyro->HasAndroidDeviceGyro();
+        bool hasController = !Ship::Context::GetInstance()
+                                  ->GetControlDeck()
+                                  ->GetConnectedPhysicalDeviceManager()
+                                  ->GetConnectedSDLGamepadsForPort(port)
+                                  .empty();
+
+        if (hasDeviceGyro) {
+            ImGui::Text("Add gyro source:");
+            if (ImGui::Button("Use device gyro")) {
+                if (gyro->SetAndroidDeviceGyroMapping()) {
+                    mInputEditorPopupOpen = false;
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            if (hasController) {
+                ImGui::Text("Or press any button\nor move any axis\non your controller");
+            }
+        } else if (hasController) {
+            ImGui::Text("Press any button\nor move any axis\non your controller");
+        } else {
+            ImGui::Text("No gyro source found.\nConnect a controller\nor use a device\nwith a gyroscope.");
+        }
+#else
         ImGui::Text("Press any button\nor move any axis\nto add gyro device");
+#endif
+
         if (ImGui::Button("Cancel")) {
             mInputEditorPopupOpen = false;
             ImGui::CloseCurrentPopup();
         }
 
-        if (mMappingInputBlockTimer == INT32_MAX && Ship::Context::GetInstance()
-                                                        ->GetControlDeck()
-                                                        ->GetControllerByPort(port)
-                                                        ->GetGyro()
-                                                        ->SetGyroMappingFromRawPress()) {
+        if (mMappingInputBlockTimer == INT32_MAX &&
+            gyro->SetGyroMappingFromRawPress()) {
             mInputEditorPopupOpen = false;
             ImGui::CloseCurrentPopup();
         }

@@ -1,5 +1,6 @@
 package com.dishii.soh;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.MenuItem;
@@ -38,6 +39,7 @@ public class SettingsActivity extends AppCompatActivity {
     private JSONArray mMenus;
     private List<String> mMenuNames = new ArrayList<>();
     private NativeSettingsBridge mBridge;
+    private int mCurrentMenuIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +83,7 @@ public class SettingsActivity extends AppCompatActivity {
         for (int i = 0; i < mMenus.length(); i++) {
             mMenuNames.add(mMenus.optJSONObject(i).optString("name", "Menu " + i));
         }
+        mMenuNames.add("Controller Mapping");
 
         setupSpinner();
 
@@ -98,7 +101,15 @@ public class SettingsActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                loadMenu(pos);
+                int controllerMappingPos = mMenuNames.size() - 1;
+                if (pos == controllerMappingPos) {
+                    // Reset spinner to previous menu without triggering another event.
+                    spinner.post(() -> spinner.setSelection(mCurrentMenuIndex));
+                    startActivity(new Intent(SettingsActivity.this, ControllerMappingActivity.class));
+                } else {
+                    mCurrentMenuIndex = pos;
+                    loadMenu(pos);
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}

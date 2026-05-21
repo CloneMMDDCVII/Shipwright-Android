@@ -28,6 +28,10 @@ class Menu : public GuiWindow {
     void AddMenuEntry(std::string entryName, const char* entryCvar);
     std::unordered_map<uint32_t, disabledInfo>& GetDisabledMap();
 
+#ifdef __ANDROID__
+    void SerializeToJson();
+#endif
+
   protected:
     ImVec2 mOriginalSize;
     std::string mName;

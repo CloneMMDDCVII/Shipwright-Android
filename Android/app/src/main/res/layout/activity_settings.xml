@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/settings_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        app:titleTextColor="@android:color/white">
+
+        <!-- Menu selector spinner embedded in toolbar -->
+        <Spinner
+            android:id="@+id/settings_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            android:minWidth="160dp" />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Error state (hidden unless schema is missing/corrupt) -->
+    <TextView
+        android:id="@+id/settings_error"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+    <!-- Preference fragment host -->
+    <FrameLayout
+        android:id="@+id/settings_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

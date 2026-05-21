@@ -4,6 +4,7 @@ import org.libsdl.app.SDLActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -404,6 +405,12 @@ public class MainActivity extends SDLActivity{
         buttonBack = overlayView.findViewById(R.id.buttonBack);
 
         buttonToggle = overlayView.findViewById(R.id.buttonToggle);
+
+        Button buttonSettings = overlayView.findViewById(R.id.buttonSettings);
+        buttonSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        });
 
         // Initialize joysticks and joystick knobs from the inflated layout
         leftJoystick = overlayView.findViewById(R.id.left_joystick);

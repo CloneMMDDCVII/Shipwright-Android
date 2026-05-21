@@ -853,4 +853,157 @@ void Menu::DrawElement() {
     }
     ImGui::End();
 }
+#ifdef __ANDROID__
+// ---------------------------------------------------------------------------
+// Settings schema serializer — walks the widget tree and emits a JSON file
+// that the Android SettingsActivity reads to build a native preferences UI.
+// Called once at the end of SohMenu::InitElement() so all widgets are present.
+// ---------------------------------------------------------------------------
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include "Context.h"
+#include <spdlog/spdlog.h>
+#include <algorithm>
+
+static nlohmann::json SerializeWidget(const WidgetInfo& widget) {
+    nlohmann::json w;
+    switch (widget.type) {
+        case WIDGET_SEPARATOR_TEXT:
+            w["type"] = "separator";
+            w["label"] = widget.name;
+            return w;
+
+        case WIDGET_CVAR_CHECKBOX: {
+            if (!widget.cVar || widget.cVar[0] == '\0') return nullptr;
+            w["type"] = "checkbox";
+            w["label"] = widget.name;
+            w["cvar"] = widget.cVar;
+            if (widget.options) {
+                if (widget.options->tooltip && widget.options->tooltip[0])
+                    w["tooltip"] = widget.options->tooltip;
+                auto opts = std::static_pointer_cast<UIWidgets::CheckboxOptions>(widget.options);
+                w["default"] = opts->defaultValue;
+            }
+            return w;
+        }
+
+        case WIDGET_CVAR_SLIDER_INT: {
+            if (!widget.cVar || widget.cVar[0] == '\0') return nullptr;
+            w["type"] = "slider_int";
+            w["label"] = widget.name;
+            w["cvar"] = widget.cVar;
+            if (widget.options) {
+                if (widget.options->tooltip && widget.options->tooltip[0])
+                    w["tooltip"] = widget.options->tooltip;
+                auto opts = std::static_pointer_cast<UIWidgets::IntSliderOptions>(widget.options);
+                w["min"] = opts->min;
+                w["max"] = opts->max;
+                w["step"] = opts->step;
+                w["default"] = opts->defaultValue;
+                w["format"] = opts->format ? opts->format : "%d";
+            }
+            return w;
+        }
+
+        case WIDGET_CVAR_SLIDER_FLOAT: {
+            if (!widget.cVar || widget.cVar[0] == '\0') return nullptr;
+            w["type"] = "slider_float";
+            w["label"] = widget.name;
+            w["cvar"] = widget.cVar;
+            if (widget.options) {
+                if (widget.options->tooltip && widget.options->tooltip[0])
+                    w["tooltip"] = widget.options->tooltip;
+                auto opts = std::static_pointer_cast<UIWidgets::FloatSliderOptions>(widget.options);
+                w["min"] = opts->min;
+                w["max"] = opts->max;
+                w["step"] = opts->step;
+                w["default"] = opts->defaultValue;
+                w["percentage"] = opts->isPercentage;
+            }
+            return w;
+        }
+
+        case WIDGET_CVAR_COMBOBOX: {
+            if (!widget.cVar || widget.cVar[0] == '\0') return nullptr;
+            w["type"] = "combobox";
+            w["label"] = widget.name;
+            w["cvar"] = widget.cVar;
+            if (widget.options) {
+                if (widget.options->tooltip && widget.options->tooltip[0])
+                    w["tooltip"] = widget.options->tooltip;
+                auto opts = std::static_pointer_cast<UIWidgets::ComboboxOptions>(widget.options);
+                w["default"] = static_cast<int32_t>(opts->defaultIndex);
+                nlohmann::json options = nlohmann::json::array();
+                std::vector<std::pair<int32_t, std::string>> sorted;
+                for (auto& [k, v] : opts->comboMap) {
+                    sorted.emplace_back(k, v ? v : "");
+                }
+                std::sort(sorted.begin(), sorted.end());
+                for (auto& [k, v] : sorted) {
+                    options.push_back({ { "value", k }, { "label", v } });
+                }
+                w["options"] = options;
+            }
+            return w;
+        }
+
+        default:
+            return nullptr;
+    }
+}
+
+void Menu::SerializeToJson() {
+    nlohmann::json schema;
+    schema["version"] = 1;
+    schema["menus"] = nlohmann::json::array();
+
+    for (const auto& menuLabel : menuOrder) {
+        if (menuLabel == "Search") {
+            continue;
+        }
+        const auto& menuEntry = menuEntries.at(menuLabel);
+
+        nlohmann::json menuJson;
+        menuJson["name"] = menuLabel;
+        menuJson["sections"] = nlohmann::json::array();
+
+        for (const auto& sidebarLabel : menuEntry.sidebarOrder) {
+            if (sidebarLabel == "Search") {
+                continue;
+            }
+            const auto& sidebar = menuEntry.sidebars.at(sidebarLabel);
+
+            nlohmann::json sectionJson;
+            sectionJson["name"] = sidebarLabel;
+            sectionJson["widgets"] = nlohmann::json::array();
+
+            for (const auto& columnWidgets : sidebar.columnWidgets) {
+                for (const auto& widget : columnWidgets) {
+                    nlohmann::json w = SerializeWidget(widget);
+                    if (!w.is_null()) {
+                        sectionJson["widgets"].push_back(std::move(w));
+                    }
+                }
+            }
+
+            if (!sectionJson["widgets"].empty()) {
+                menuJson["sections"].push_back(std::move(sectionJson));
+            }
+        }
+
+        if (!menuJson["sections"].empty()) {
+            schema["menus"].push_back(std::move(menuJson));
+        }
+    }
+
+    std::string path = Ship::Context::GetPathRelativeToAppDirectory("settings_schema.json");
+    std::ofstream file(path);
+    if (file.is_open()) {
+        file << schema.dump(2);
+        SPDLOG_INFO("Android settings schema written to {}", path);
+    } else {
+        SPDLOG_ERROR("Failed to write Android settings schema to {}", path);
+    }
+}
+#endif
 } // namespace Ship

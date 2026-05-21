@@ -156,6 +156,10 @@ void SohMenu::InitElement() {
            },
             "Vertical Resolution Toggle is Off" } },
     };
+
+#ifdef __ANDROID__
+    SerializeToJson();
+#endif
 }
 
 void SohMenu::UpdateElement() {
